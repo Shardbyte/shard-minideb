@@ -16,7 +16,7 @@ fi
 
 push() {
     local dist="$1"
-    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+    docker push "${BASENAME}:${dist}"
 }
 
 for DIST in $DISTS; do
