@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+DISTS="bullseye
+bookworm
+"
+LATEST=bookworm
+BASENAME=Shardbyte/shard-minideb
+
+if [ -n "${DOCKER_PASSWORD:-}" ]; then
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+fi
+
+push() {
+    local dist="$1"
+    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+}
+
+for DIST in $DISTS; do
+    push "$DIST"
+done
+
+docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
+
+push latest

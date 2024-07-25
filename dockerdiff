@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+IMAGE1=$1
+IMAGE2=$2
+
+inspect() {
+    docker inspect $1 | jq ".[0]|del(.RepoTags,.RepoDigests)"
+}
+
+dpkgl() {
+    docker run --rm $1 dpkg -l
+}
+
+lslr() {
+    docker run --rm $1 bash -c 'find / -xdev -not -path /proc -a -not -path /sys -print0 | sort -z | xargs -0 ls -ld'
+}
+
+md5() {
+    docker run --rm $1 bash -c 'find / -xdev -not -path /etc/hosts -a -not -path /etc/hostname -a -type f -print0 | sort -z | xargs -0 md5sum'
+}
+
+_diff() {
+    local cmd=$1
+    diff -u --label $IMAGE1 --label $IMAGE2 <($cmd $IMAGE1)  <($cmd $IMAGE2)
+}
+
+if ! _diff inspect; then
+    _diff dpkgl || true
+    _diff lslr || true
+    _diff md5 || true
+    exit 1
+fi

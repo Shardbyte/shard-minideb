@@ -1,0 +1,80 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 0 * * *'
+env:
+  BASENAME: Shardbyte/shard-minideb
+  LATEST: bookworm
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  shellcheck:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    name: Shellcheck
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y shellcheck
+      - name: Verify scripts with shellcheck
+        run: |
+          bash shellcheck
+
+  build_multiarch:
+    runs-on: ubuntu-22.04
+    needs: [ shellcheck ]
+    strategy:
+      matrix:
+        dist: [bullseye, bookworm]
+        arch: [amd64, arm64]
+
+    name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Use local build action
+        id: build
+        uses: ./.github/actions/build
+        with:
+          dist: "${{ matrix.dist }}"
+          platform: "${{ matrix.arch }}"
+          is_latest: ${{ matrix.dist == env.LATEST }}
+      - name: Push
+        if: github.ref == 'refs/heads/main'
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
+          if ${{ matrix.dist == env.LATEST }} ; then
+             bash pushone "latest" "${{ matrix.arch }}"
+          fi
+
+  deploy_manifests:
+    runs-on: ubuntu-22.04
+    needs: [ build_multiarch ]
+    if: github.ref == 'refs/heads/main'
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push Manifests
+        run: |
+          DISTS="bullseye bookworm latest" bash pushmanifest

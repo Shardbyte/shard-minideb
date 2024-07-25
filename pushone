@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+DIST=${1:?Specify the distrubution name}
+PLATFORM=${2:-amd64}
+
+BASENAME=Shardbyte/shard-minideb
+
+if [ -n "${DOCKER_PASSWORD:-}" ]; then
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+fi
+
+push() {
+    local dist="$1"
+    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+}
+
+push "$DIST-${PLATFORM}"
