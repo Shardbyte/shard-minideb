@@ -8,7 +8,7 @@ DISTS="bullseye
 bookworm
 "
 LATEST=bookworm
-BASENAME=Shardbyte/shard-minideb
+BASENAME=shardbyte/shard-minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"

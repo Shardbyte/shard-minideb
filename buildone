@@ -4,7 +4,7 @@ set -e
 set -u
 set -o pipefail
 
-BASENAME=Shardbyte/shard-minideb
+BASENAME=shardbyte/shard-minideb
 
 mkdir -p build
 

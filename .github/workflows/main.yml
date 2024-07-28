@@ -15,7 +15,7 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 env:
-  BASENAME: Shardbyte/shard-minideb
+  BASENAME: shardbyte/shard-minideb
   LATEST: bookworm
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
