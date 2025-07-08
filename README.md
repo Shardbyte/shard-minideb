@@ -31,7 +31,7 @@ FROM shardbyte/shard-minideb:bookworm
 
 # Why use Shard-Minideb
   * This image aims to strike a good balance between having small images and having many quality packages available for easy integration.
-  * The image is based on glibc for wide compatibility and is apt for access to a large number of packages. To reduce the size of the image, some things that aren't required in containers are removed:
+  * The image is based on glibc for wide compatibility and is using apt for access to a large number of packages. To reduce the size of the image, some things that aren't required in containers are removed:
     * Packages that aren't often used in containers (hardware-related, init systems, etc.)
     * Some files that aren't usually required (docs, man pages, locales, caches)
   * These images also include an `install_packages` command that you can use instead of apt. This takes care of some things for you:
@@ -99,7 +99,7 @@ Current limitations of the `qemu_build` script:
 
 MIT License
 
-Copyright (c) 2024 Shardbyte
+Copyright (c) 2024-2025 Shardbyte
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
